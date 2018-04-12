@@ -5,8 +5,6 @@ const Item = ({ title, desc, completed }) => {
     let c = (completed)
         ? 'ant-timeline-item-head ant-timeline-item-head-green'
         : 'ant-timeline-item-head ant-timeline-item-head-red';
-
-    console.log(c);
     
     return (
         <li className="ant-timeline-item">

@@ -130,7 +130,7 @@ class App extends React.Component {
                                             <button
                                                 className="btn btn-outline-secondary"
                                                 type="submit">
-                                                <i class="fas fa-paper-plane"></i>
+                                                <i className="fas fa-paper-plane"></i>
                                             </button>
                                         </div>
                                     </div>
