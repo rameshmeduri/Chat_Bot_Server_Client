@@ -1,10 +1,11 @@
 import React from 'react';
 
-const Message = ({message, author, align}) => (
-    <li className={align}>   
-        <img src="Bot.svg" />
-        <p>{message}</p>
-    </li>
-);
+const Message = ({ author, message }) => {    
+    return (
+        <li className={`chat ${author === 'USER' ? 'right' : 'left'}`}>
+            {message}
+        </li>
+    );
+};
 
 export default Message;

@@ -1,90 +1,91 @@
-import React, { Component } from 'react';
+import React from 'react';
 import ReactDOM from 'react-dom';
+import Message from './Message.js';
 import io from 'socket.io-client';
-import SendIcon from './sendIcon';
-import Message from './Message';
 
-class ChatRoom extends Component {
+const socket = io('http://localhost:5000');
 
-  constructor(props) {
-    super(props);
-    this.socket = io('http://localhost:5000');
-    this.state = {
-      action: 'START',
-      message: '',
-      chatHistory: []
-    };
-    this.socket.on('SERVER_ACTION', (payload) => {
-      console.log('recieve << SERVER_ACTION', payload);
-      this.addMessage(payload);
-    });
-  }
+class ChatRoom extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            chats: [],
+            action: 'START',
+            message: ''
+        };
+        socket.on('SERVER_ACTION', (obj) => {
+            console.log('recieve << SERVER_ACTION', obj);
+            this.addMessage(obj);
+        });
+    }
 
-  componentDidMount() {
-    this.scrollToBot();
-  }
+    addMessage = (obj) => {
+        const payload = {
+            author: obj.author,
+            message: obj.message
+        };
+        this.setState({ action: obj.nextAction, chats: [...this.state.chats, payload] });
+    }
 
-  componentDidUpdate() {
-    this.scrollToBot();
-  }
+    onChange = (e) => {
+        this.setState({ message: e.target.value });
+    }
 
-  scrollToBot() {
-    ReactDOM.findDOMNode(this.refs.chats).scrollTop = ReactDOM.findDOMNode(this.refs.chats).scrollHeight;
-  }
+    onSubmit = (e) => {
+        e.preventDefault();
+        const payload = {
+            author: 'USER',
+            action: this.state.action,
+            message: this.state.message
+        };
+        console.log('emit >> CLIENT_ACTION', payload);
+        socket.emit('CLIENT_ACTION', payload);
+        this.setState({ message: '', chats: [...this.state.chats, payload] });
+    }
 
-  addMessage = (obj) => {
-    const payload = {
-      author: obj.author,
-      action: obj.nextAction,
-      message: obj.message
-    };
-    this.setState({ chatHistory: [...this.state.chatHistory, payload] });
-    console.log(this.state.chatHistory);
-  }
+    componentDidMount() {
+        this.scrollToBot();
+    }
 
-  sendMessage = (e) => {
-    e.preventDefault();
-    const payload = {
-      author: 'USER',
-      action: this.state.action,
-      message: this.state.message
-    };
-    console.log('emit >> CLIENT_ACTION', payload);
-    this.socket.emit('CLIENT_ACTION', payload);
-    //this.setState({ message: '' });
-    this.setState({ message: '', chatHistory: [...this.state.chatHistory, payload] });
-  }
+    componentDidUpdate() {
+        this.scrollToBot();
+    }
 
-  changeHandler = (e) => {
-    this.setState({ message: e.target.value });
-  }
+    scrollToBot() {
+        ReactDOM.findDOMNode(this.refs.chats).scrollTop = ReactDOM.findDOMNode(this.refs.chats).scrollHeight;
+    }
 
-  render() {
-    const chats = this.state.chatHistory;
-    return (
-      <div className="chatroom">
-        <h3>Chilltime</h3>
-        <ul className="chats" ref="chats">
-          {
-            chats.map((obj, index) => {
-              console.log(obj);
-              return(
-              <Message key={index} message={obj.message} author={obj.author} align="right" />
-              )
-          })
-          }
-        </ul>
-        <form className="input" onSubmit={this.sendMessage}>
-          <input
-            type="text"
-            value={this.state.message}
-            onChange={this.changeHandler} />
-          
-          <input type="submit" value="Submit" />
-        </form>
-      </div>
-    );
-  }
+    render() {
+        const { chats } = this.state;
+        return (
+            <div className="chatroom">
+                <h3>v2</h3>
+                <ul className="chats" ref="chats">
+                    {
+                        chats.map((obj, index) => (
+                            <Message key={index} author={obj.author} message={obj.message} />
+                        ))
+                    }
+                </ul>
+                <form className="input" onSubmit={this.onSubmit}>
+                    <div className="input-group mb-3">
+                        <input type="text"
+                            className="form-control"
+                            value={this.state.message}
+                            onChange={this.onChange} />
+                        <div className="input-group-append">
+                            <button
+                                className="btn btn-outline-secondary"
+                                type="submit">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+            </div>
+        );
+    }
 }
 
 export default ChatRoom;
