@@ -35,28 +35,28 @@ io.on('connection', (client) => {
                 break;
 
             case 'STEP_1':
-                obj = { author, nextAction: 'STEP_2', message: 'ISIN' };
+                obj = { author, completed: 'STEP_1', nextAction: 'STEP_2', message: 'ISIN' };
                 break;
 
             case 'STEP_2':
-                obj = { author, nextAction: 'STEP_3', message: 'Quantity' };
+                obj = { author, completed: 'STEP_2', nextAction: 'STEP_3', message: 'Quantity' };
                 break;
 
             case 'STEP_3':
-                obj = { author, nextAction: 'STEP_4', message: 'Price' };
+                obj = { author, completed: 'STEP_3', nextAction: 'STEP_4', message: 'Price' };
                 break;
 
             case 'STEP_4':
-                obj = { author, nextAction: 'END', message: 'Your Ticket has been Created' };
+                obj = { author, completed: 'STEP_4', nextAction: 'END', message: 'Your Ticket has been Created' };
                 break;
 
             default:
-                obj = { author, nextAction: 'NONE', message: 'Command Not Recognised' };
+                obj = { author, completed: 'NONE', nextAction: 'NONE', message: 'Command Not Recognised' };
                 break;
-
         }
 
         io.emit('SERVER_ACTION', obj);
+        
     });
 });
 

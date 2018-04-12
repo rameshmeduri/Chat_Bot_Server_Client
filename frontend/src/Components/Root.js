@@ -1,12 +1,12 @@
 import React from 'react';
 
 import Header from './Header';
-import Main from './Main';
+import App from './App';
 
 const Root = () => (
     <div>
         <Header />
-        <Main />
+        <App />
     </div>
 );
 
