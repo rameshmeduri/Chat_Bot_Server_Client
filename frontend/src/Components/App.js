@@ -7,88 +7,119 @@ import Timeline from './Timeline';
 
 const socket = io('http://localhost:5000');
 
-let initStatusArr = [
-    {
-        title: 'Type',
-        desc: 'BUY',
-        completed: false,
-        event: 'STEP_1'
-    },
-    {
-        title: 'ISIN',
-        desc: '123',
-        completed: false,
-        event: 'STEP_2'
-    },
-    {
-        title: 'Quantity',
-        desc: '100',
-        completed: false,
-        event: 'STEP_3'
-    },
-    {
-        title: 'Price',
-        desc: '10.96',
-        completed: false,
-        event: 'STEP_4'
-    },
-    {
-        title: 'Status',
-        desc: 'Ticket #A123 has been Booked',
-        completed: false,
-        event: 'END'
-    }
-];
+const initTimeline = () => {
+    return [
+        {
+            event: 'STEP_1',
+            completed: false,
+            title: 'Type',
+            desc: ''
+        },
+        {
+            event: 'STEP_2',
+            completed: false,
+            title: 'ISIN',
+            desc: ''
+        },
+        {
+            event: 'STEP_3',
+            completed: false,
+            title: 'Quantity',
+            desc: ''
+        },
+        {
+            event: 'STEP_4',
+            completed: false,
+            title: 'Price',
+            desc: ''
+        },
+        {
+            event: 'STEP_5',
+            completed: false,
+            title: 'Book Trade',
+            desc: ''
+        },
+        {
+            event: 'END',
+            completed: false,
+            title: 'Status',
+            desc: ''
+        }
+    ];
+};
 
 class App extends React.Component {
+
     constructor(props) {
         super(props);
         this.state = {
+            showTimeline: false,
             action: 'START',
             message: '',
-            chats: [],
-            statusArr: initStatusArr
+            chatHistory: [],            
+            timelineEvents: initTimeline()
         };
         socket.on('SERVER_ACTION', (obj) => {
             console.log('recieve << SERVER_ACTION', obj);
-            this.addMessage(obj);
+            this.addServerMsg(obj);
         });
     }
 
-    addMessage = (obj) => {
+    addServerMsg = (obj) => {
         const payload = {
             author: obj.author,
-            message: obj.message
+            message: obj.nextMsg
         };
 
         this.setState({
             action: obj.nextAction,
-            chats: [...this.state.chats, payload]
+            chatHistory: [...this.state.chatHistory, payload]
         });
 
-        if (obj.completed) {
-            let newArr = [...this.state.statusArr];
-            let foundItem = newArr.find((el) => el.event === obj.completed);
+        // Update Timeline Current Step Info
+        const step = obj.timelineStep;
+        if (step) {
+            let newArr = [...this.state.timelineEvents];
+            let foundItem = newArr.find((el) => el.event === step);
             foundItem.completed = true;
-            this.setState({statusArr: newArr});
-        }
+            foundItem.desc = obj.timelineMsg;
 
+            if (obj.nextAction === 'END') {
+                let lastItem = newArr[newArr.length - 1];
+                lastItem.completed = true;
+                lastItem.desc = obj.nextMsg;
+                this.setState({ action: 'START' });
+            }
+
+            this.setState({
+                showTimeline: true,
+                timelineEvents: newArr
+            });
+        }
     }
 
     onChange = (e) => {
         this.setState({ message: e.target.value });
     }
 
-    onSubmit = (e) => {
+    addClientMsg = (e) => {
         e.preventDefault();
-        const payload = {
+        const action = this.state.action;
+        const msg = this.state.message;
+        if (action === 'STEP_1' || msg === 'CLEAR') {            
+            this.setState({
+                showTimeline: false,
+                timelineEvents: initTimeline()
+            });
+        }
+        const obj = {
             author: 'USER',
             action: this.state.action,
-            message: this.state.message
+            message: msg
         };
-        console.log('emit >> CLIENT_ACTION', payload);
-        socket.emit('CLIENT_ACTION', payload);
-        this.setState({ message: '', chats: [...this.state.chats, payload] });
+        console.log('emit >> CLIENT_ACTION', obj);
+        socket.emit('CLIENT_ACTION', obj);
+        this.setState({ message: '', chatHistory: [...this.state.chatHistory, obj] });
     }
 
     componentDidMount() {
@@ -104,7 +135,7 @@ class App extends React.Component {
     }
 
     render() {
-        const { chats, statusArr } = this.state;
+        const { chatHistory, showTimeline, timelineEvents } = this.state;
         return (
             <div className="container-fluid">
                 <div className="row">
@@ -112,15 +143,15 @@ class App extends React.Component {
                         <br />
                         <div className="App">
                             <div className="chatroom">
-                                <h3>v2</h3>
+                                <h3>V2</h3>
                                 <ul className="chats" ref="chats">
                                     {
-                                        chats.map((obj, index) => (
+                                        chatHistory.map((obj, index) => (
                                             <Message key={index} author={obj.author} message={obj.message} />
                                         ))
                                     }
                                 </ul>
-                                <form className="input" onSubmit={this.onSubmit}>
+                                <form className="input" onSubmit={this.addClientMsg}>
                                     <div className="input-group mb-3">
                                         <input type="text"
                                             className="form-control"
@@ -140,8 +171,7 @@ class App extends React.Component {
                     </div>
                     <div className="col">
                         <br />
-                        <h3>Ticket</h3>
-                        <Timeline items={statusArr} />
+                        <Timeline events={timelineEvents} show={showTimeline} />
                     </div>
                 </div>
             </div>

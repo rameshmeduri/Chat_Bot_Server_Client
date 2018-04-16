@@ -1,23 +1,27 @@
 const steps = {
     'START': {
-        request: '?',
-        response: 'BUY or SELL'
+        client: '?',
+        server: 'BUY or SELL'
     },
     'STEP_1': {
-        request: 'BUY',
-        response: 'ISIN'
+        client: 'BUY',
+        server: 'ISIN'
     },
     'STEP_2': {
-        request: 'DE0007164600',
-        response: 'ISIN=DE0007164600 <br /> Quantity'
+        client: '123',
+        server: 'QUANTITY'
     },
     'STEP_3': {
-        request: '100',
-        response: 'Quantity=100 Units <br /> Price'
+        client: '100',
+        server: 'PRICE'
     },
     'STEP_4': {
-        request: '10.96',
-        response: 'Price=10.96'
+        client: '10.96',
+        server: 'BOOK_TRADE(YES/NO/CLEAR)'
+    },
+    'STEP_5': {
+        client: 'YES',
+        server: '#123 Booked'
     }
 };
 
