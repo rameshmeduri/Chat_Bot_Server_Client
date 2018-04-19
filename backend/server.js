@@ -59,7 +59,7 @@ io.on('connection', (client) => {
                     if (clientMsg.toUpperCase() === 'NO') {
                         nextObj = { nextAction: 'START', nextMsg: `Please Start Again`, timelineMsg: clientMsg, author };
                     } else {
-                        nextObj = { nextAction: 'END', nextMsg: `Your Ticket #${Date.now()} has been Created`, timelineMsg: clientMsg, timelineStep: 'STEP_5', author };
+                        nextObj = { nextAction: 'END', nextMsg: `#${Date.now()}`, timelineMsg: clientMsg, timelineStep: 'STEP_5', author };
                     }
                     break;
             }
